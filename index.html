@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>精灵兔大冒险 - Premium Sprite Engine</title>
+    <title>精灵兔大冒险 - Easy Mode</title>
     <style>
         :root {
             --rabbit-w: 100px;
@@ -64,7 +64,7 @@
         #game-viewport.night #celestial {
             background: #F0F0F0;
             box-shadow: 0 0 20px #F0F0F0;
-            transform: translate(-100px, 300px); /* 模拟落下 */
+            transform: translate(-100px, 300px);
         }
 
         /* 繁星背景 */
@@ -126,7 +126,7 @@
             width: 100px;
             height: 100px;
             background-image: url('image/sprite.png');
-            background-size: 800% 200%;
+            background-size: 800px 200px;
             opacity: 0.5;
             z-index: 9;
             pointer-events: none;
@@ -219,10 +219,10 @@
             width: 200%;
             height: 100%;
             will-change: transform;
-            pointer-events: none; /* 默认不拦截点击，让 UI 可点 */
+            pointer-events: none;
         }
 
-        /* 远景：云朵 (置于顶部) */
+        /* 远景：云朵 */
         .layer-clouds {
             background: url('https://api.iconify.design/mdi:cloud.svg?color=white&alpha=0.4') repeat-x;
             background-size: 150px;
@@ -232,17 +232,17 @@
             z-index: 1;
         }
 
-        /* 中景：远山 (贴合底部) */
+        /* 中景：远山 */
         .layer-mountains {
             background: url('https://api.iconify.design/mdi:mountain.svg?color=%235c8e9d') repeat-x bottom;
             background-size: 300px 200px;
-            height: 400px; /* 给一个足够高的高度 */
+            height: 400px;
             bottom: 60px;
             opacity: 0.5;
             z-index: 2;
         }
 
-        /* 装饰：树木 (中远景) */
+        /* 装饰：树木 */
         .layer-trees {
             background: url('https://api.iconify.design/mdi:tree.svg?color=%231e3a1a') repeat-x bottom;
             background-size: 150px 180px;
@@ -254,7 +254,7 @@
             transform-origin: bottom center;
         }
 
-        /* 装饰：灌木 (中近景) */
+        /* 装饰：灌木 */
         .layer-bushes {
             background: url('https://api.iconify.design/mdi:leaf.svg?color=%232d5a27') repeat-x bottom;
             background-size: 80px 60px;
@@ -292,7 +292,7 @@
             to { transform: translateX(-100px) translateY(var(--y)); }
         }
 
-        /* 近景：草地 (最重要的基准层) */
+        /* 近景：草地 */
         .layer-grass {
             position: absolute;
             bottom: 0;
@@ -305,7 +305,7 @@
             box-shadow: 0 -10px 20px rgba(0,0,0,0.2);
         }
 
-        /* 前景：模糊草丛 (覆盖在最前面) */
+        /* 前景：模糊草丛 */
         .layer-foreground {
             background: url('https://api.iconify.design/mdi:grass.svg?color=%231a4016') repeat-x bottom;
             background-size: 200px 100px;
@@ -324,7 +324,7 @@
             height: 12px;
             background: rgba(0,0,0,0.2);
             border-radius: 50%;
-            bottom: 45px; /* 下调阴影位置 (原来 54) */
+            bottom: 45px;
             left: 0;
             z-index: 9;
             transform: translateX(20px);
@@ -347,40 +347,38 @@
             position: absolute;
             width: var(--rabbit-w);
             height: var(--rabbit-h);
-            bottom: 60px;
+            bottom: 45px;
             left: 100px;
             background-image: url('image/sprite.png');
-            background-size: 800px 200px; /* 明确使用 800px 以对应 8 个 100px 宽的帧 */
+            background-size: 800px 200px;
             z-index: 10;
             image-rendering: pixelated;
-            transition: transform 0.2s ease, filter 0.2s; /* 增加 transform 平滑过渡 */
+            transition: transform 0.2s ease, filter 0.2s;
         }
 
         /* 动画类优化 */
         .anim-run-right { 
             animation: run 0.6s steps(8) infinite; 
             background-position-y: 0;
-            transform: skewX(-5deg); /* 向右跑时身体微倾，增加速度感 */
+            transform: skewX(-5deg);
         }
         .anim-run-left { 
             animation: run 0.6s steps(8) infinite; 
             background-position-y: 100%;
-            transform: skewX(5deg); /* 向左跑时身体微倾 */
+            transform: skewX(5deg);
         }
         .anim-idle-right { background-position: 0 0; transform: scale(1); }
         .anim-idle-left { background-position: 0 100%; transform: scale(1); }
         
-        /* 改进跳跃姿势：根据速度缩放角色 */
         .anim-jump-right { 
-            background-position: -200px 0; /* 使用第3帧作为跳跃核心帧 */
-            transform: scale(0.95, 1.1); /* 跳跃时纵向拉伸 */
+            background-position: -200px 0;
+            transform: scale(0.95, 1.1);
         } 
         .anim-jump-left { 
             background-position: -200px 100%; 
             transform: scale(0.95, 1.1);
         }
 
-        /* 冲刺姿势：极度倾斜 */
         .dashing {
             transform: skewX(-15deg) scale(1.1, 0.9) !important;
             filter: brightness(1.5) drop-shadow(0 0 10px #38bdf8);
@@ -392,7 +390,7 @@
             to { background-position-x: -800px; }
         }
 
-        /* UI 与 提示 */
+        /* UI */
         .ui-overlay {
             position: absolute;
             top: 20px;
@@ -407,7 +405,6 @@
             gap: 10px;
         }
 
-        /* 血条样式 */
         .hp-bar-container {
             width: 200px;
             height: 20px;
@@ -424,11 +421,11 @@
             transition: width 0.3s ease;
         }
 
-        /* 游戏物体层 (动态生成) */
+        /* 物体层 */
         #object-layer {
             position: absolute;
             inset: 0;
-            z-index: 8; /* 确保在草地之上，玩家之下 */
+            z-index: 8;
             pointer-events: none;
         }
 
@@ -437,7 +434,7 @@
             z-index: 8;
             background-size: contain;
             background-repeat: no-repeat;
-            transform-origin: center center; /* 确保旋转中心在几何中心 */
+            transform-origin: center center;
         }
 
         .collectible {
@@ -455,12 +452,36 @@
             filter: drop-shadow(0 0 10px #38bdf8);
         }
 
+        .shield {
+            width: 45px;
+            height: 45px;
+            background-image: url('https://api.iconify.design/mdi:shield-check.svg?color=%23fbbf24');
+            animation: pulse 0.5s infinite alternate;
+            filter: drop-shadow(0 0 10px #fbbf24);
+        }
+
+        .clock {
+            width: 45px;
+            height: 45px;
+            background-image: url('https://api.iconify.design/mdi:clock-outline.svg?color=%23a855f7');
+            animation: pulse 0.5s infinite alternate;
+            filter: drop-shadow(0 0 10px #a855f7);
+        }
+
+        .potion {
+            width: 45px;
+            height: 45px;
+            background-image: url('https://api.iconify.design/mdi:bottle-tonic-plus.svg?color=%23ef4444');
+            animation: pulse 0.5s infinite alternate;
+            filter: drop-shadow(0 0 10px #ef4444);
+        }
+
         @keyframes pulse {
             from { transform: scale(1); }
             to { transform: scale(1.2); }
         }
 
-        /* 磁铁生效特效 */
+        /* 道具生效特效 */
         .magnet-active::after {
             content: "";
             position: absolute;
@@ -468,6 +489,21 @@
             border: 2px dashed #38bdf8;
             border-radius: 50%;
             animation: rotate 2s linear infinite;
+        }
+
+        .shield-active::before {
+            content: "";
+            position: absolute;
+            inset: -15px;
+            border: 3px solid #fbbf24;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #fbbf24;
+            animation: pulse 0.3s infinite alternate;
+            z-index: 11;
+        }
+
+        .slow-mo-active {
+            filter: sepia(0.5) hue-rotate(260deg) !important;
         }
 
         @keyframes rotate {
@@ -479,14 +515,10 @@
             width: 50px;
             height: 50px;
             background: #4b5563;
-            /* 利用 clip-path 打造不规则多边形岩石形状 */
             clip-path: polygon(20% 0%, 80% 0%, 100% 40%, 90% 90%, 50% 100%, 10% 90%, 0% 40%);
-            border: none;
-            /* 移除 position: relative，确保继承 .game-object 的 absolute 定位 */
-            box-shadow: inset -5px -5px 0 rgba(0,0,0,0.3); /* 内部阴影增强立体感 */
+            box-shadow: inset -5px -5px 0 rgba(0,0,0,0.3);
         }
 
-        /* 增加岩石纹理和阴影层 */
         .obstacle::before {
             content: "";
             position: absolute;
@@ -495,24 +527,12 @@
             z-index: 1;
         }
 
-        .obstacle::after {
-            content: "";
-            position: absolute;
-            top: 20%;
-            left: 20%;
-            width: 40%;
-            height: 5px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            transform: rotate(-30deg);
-        }
-
         @keyframes bounce {
             from { transform: translateY(0); }
             to { transform: translateY(-10px); }
         }
 
-        /* 覆盖层界面 */
+        /* 覆盖层 */
         .screen-overlay {
             position: absolute;
             inset: 0;
@@ -572,7 +592,7 @@
         .btn-circle {
             width: 70px;
             height: 70px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: 2px solid white;
             border-radius: 50%;
             display: flex;
@@ -583,9 +603,6 @@
             touch-action: none;
         }
 
-        .btn-circle:active { background: rgba(255,255,255,0.4); }
-
-        /* 错误提示 */
         #error-card {
             position: absolute;
             inset: 0;
@@ -595,93 +612,95 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
             padding: 40px;
             color: #ef4444;
         }
 
         @media (max-width: 768px) {
-            #game-viewport { width: 95vw; height: 60vh; border-width: 5px; }
-            .mobile-controls { display: flex; }
+            #game-viewport { 
+                width: 100vw; 
+                height: 100vh; 
+                border-width: 0; 
+                border-radius: 0;
+            }
+            .mobile-controls { 
+                display: flex; 
+                bottom: 20px;
+                padding: 0 20px;
+            }
             .controls-info { display: none; }
+            .btn-circle {
+                width: 80px;
+                height: 80px;
+                background: rgba(255, 255, 255, 0.3);
+                border: 3px solid rgba(255, 255, 255, 0.8);
+                font-size: 28px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            }
+            .ui-overlay {
+                top: 10px;
+                left: 10px;
+                scale: 0.8;
+                transform-origin: top left;
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="game-viewport">
-        <!-- 天体 -->
         <div id="celestial"></div>
         <div id="stars-container"></div>
         <div id="weather-layer"></div>
 
-        <!-- 视差层 -->
         <div class="parallax-layer layer-clouds" id="clouds"></div>
         <div class="parallax-layer layer-mountains" id="mountains"></div>
         <div class="parallax-layer layer-trees" id="trees"></div>
         <div class="parallax-layer layer-bushes" id="bushes"></div>
-        
-        <!-- 装饰物 -->
         <div id="shadow"></div>
-        
-        <!-- 角色 -->
         <div id="player"></div>
-        
-        <!-- 地面层 -->
         <div class="layer-grass"></div>
-
-        <!-- 前景装饰 (在所有东西最前面) -->
         <div class="parallax-layer layer-foreground" id="foreground"></div>
-
-        <!-- 游戏物体层 (动态生成) -->
         <div id="object-layer"></div>
 
-        <!-- UI -->
         <div class="ui-overlay">
-            <div class="hp-bar-container">
-                <div id="hp-fill"></div>
-            </div>
-            <div class="energy-container">
-                <div id="energy-fill"></div>
-            </div>
+            <div class="hp-bar-container"><div id="hp-fill"></div></div>
+            <div class="energy-container"><div id="energy-fill"></div></div>
             <div id="score">SCORE: 0000</div>
+            <div id="highscore" style="font-size: 10px; color: #64748b;">HI: 0000</div>
+            <div id="combo-display" style="display: none; color: #fcd34d; font-size: 18px; margin-top: 5px;">COMBO x1</div>
+            
+            <!-- 道具状态进度条 -->
+            <div id="powerup-bars" style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
+                <div id="bar-magnet" style="display: none; width: 100px; height: 4px; background: #38bdf8; border-radius: 2px;"></div>
+                <div id="bar-shield" style="display: none; width: 100px; height: 4px; background: #fbbf24; border-radius: 2px;"></div>
+                <div id="bar-clock" style="display: none; width: 100px; height: 4px; background: #a855f7; border-radius: 2px;"></div>
+            </div>
         </div>
 
-        <!-- 开始界面 -->
         <div id="start-screen" class="screen-overlay">
-            <h1 style="font-size: 40px; text-shadow: 0 5px 0 #1e293b;">精灵兔大冒险</h1>
-            <p style="margin-top: 10px; color: #94a3b8;">奔跑、跳跃、收集星星！</p>
+            <h1 style="font-size: 40px;">精灵兔大冒险</h1>
+            <p style="margin-top: 10px; color: #94a3b8;">简单模式已开启 - 轻松跑酷！</p>
             <button class="btn-start" onclick="startGame()">开始游戏</button>
         </div>
 
-        <!-- 游戏结束界面 -->
         <div id="gameover-screen" class="screen-overlay" style="display: none;">
             <h1 style="font-size: 40px; color: #ef4444;">游戏结束</h1>
             <p id="final-score" style="margin-top: 10px;"></p>
-            <button class="btn-start" onclick="startGame()" style="background: #f59e0b; box-shadow: 0 10px 0 #d97706;">重新挑战</button>
+            <button class="btn-start" onclick="startGame()" style="background: #f59e0b;">重新挑战</button>
         </div>
 
         <div class="controls-info">
-            <p><kbd>A</kbd> <kbd>D</kbd> 左右移动</p>
-            <p><kbd>SPACE</kbd> / <kbd>W</kbd> 跳跃</p>
-            <p><kbd>SHIFT</kbd> / <kbd>K</kbd> 冲刺</p>
+            <p><kbd>A</kbd> <kbd>D</kbd> 移动 | <kbd>SPACE</kbd> 跳跃 | <kbd>SHIFT</kbd> 冲刺</p>
         </div>
 
         <div id="error-card">
-            <h2 style="margin-bottom: 20px;">⚠️ 精灵图加载失败</h2>
-            <p style="color: #94a3b8; line-height: 1.6; font-size: 14px;">
-                1. 确保文件名为 <b style="color: white;">sprite.png</b> (注意后缀名)<br>
-                2. 确保文件放在 <b style="color: white;">image</b> 文件夹内<br>
-                3. 当前尝试路径: <span style="color: #38bdf8;">image/sprite.png</span>
-            </p>
-            <div style="display: flex; gap: 15px; margin-top: 25px;">
-                <button class="btn-start" onclick="location.reload()" style="margin-top:0; font-size:14px; padding:10px 20px;">重试加载</button>
-                <button class="btn-start" onclick="forceStart()" style="margin-top:0; font-size:14px; padding:10px 20px; background:#64748b; box-shadow:0 6px 0 #475569;">跳过检查</button>
-            </div>
+            <h2>⚠️ 精灵图加载失败</h2>
+            <p>尝试路径: image/sprite.png</p>
+            <button class="btn-start" onclick="forceStart()">跳过检查</button>
         </div>
     </div>
 
-    <!-- 移动端控制 -->
     <div class="mobile-controls">
         <div style="display: flex; gap: 20px;">
             <div class="btn-circle" id="btn-left">←</div>
@@ -691,445 +710,349 @@
     </div>
 
     <script>
-        // 音效系统 (Web Audio API)
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
         function playSound(type) {
             if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-
             const now = audioCtx.currentTime;
             if (type === 'jump') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, now);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
                 osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start();
-                osc.stop(now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(); osc.stop(now + 0.1);
             } else if (type === 'collect') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
                 osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                osc.start();
-                osc.stop(now + 0.2);
-            } else if (type === 'hit') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.linearRampToValueAtTime(10, now + 0.2);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-                osc.start();
-                osc.stop(now + 0.2);
-            } else if (type === 'fever') {
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(); osc.stop(now + 0.2);
+            } else if (type === 'powerup') {
+                // 优化后的道具拾取音效：清脆的琶音上升感
                 osc.type = 'square';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.5);
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                osc.frequency.exponentialRampToValueAtTime(1760, now + 0.2);
                 gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                osc.start();
-                osc.stop(now + 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(); osc.stop(now + 0.3);
+            } else if (type === 'heal') {
+                // 回血音效：温润的圆号感
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(); osc.stop(now + 0.3);
+            } else if (type === 'hit') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(10, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(); osc.stop(now + 0.2);
             }
         }
 
-        // 游戏引擎变量
-        const player = document.getElementById('player');
-        const shadow = document.getElementById('shadow');
-        const clouds = document.getElementById('clouds');
-        const mountains = document.getElementById('mountains');
-        const trees = document.getElementById('trees');
-        const bushes = document.getElementById('bushes');
-        const foreground = document.getElementById('foreground');
-        const scoreEl = document.getElementById('score');
-        const hpFill = document.getElementById('hp-fill');
-        const energyFill = document.getElementById('energy-fill');
-        const objectLayer = document.getElementById('object-layer');
-        const startScreen = document.getElementById('start-screen');
-        const gameoverScreen = document.getElementById('gameover-screen');
-        const errorCard = document.getElementById('error-card');
-        const viewport = document.getElementById('game-viewport');
-        const starsContainer = document.getElementById('stars-container');
-        const weatherLayer = document.getElementById('weather-layer');
+        const player = document.getElementById('player'), shadow = document.getElementById('shadow'),
+              clouds = document.getElementById('clouds'), mountains = document.getElementById('mountains'),
+              trees = document.getElementById('trees'), bushes = document.getElementById('bushes'),
+              foreground = document.getElementById('foreground'), scoreEl = document.getElementById('score'),
+              hpFill = document.getElementById('hp-fill'), energyFill = document.getElementById('energy-fill'),
+              objectLayer = document.getElementById('object-layer'), startScreen = document.getElementById('start-screen'),
+              gameoverScreen = document.getElementById('gameover-screen'), errorCard = document.getElementById('error-card'),
+              viewport = document.getElementById('game-viewport'), starsContainer = document.getElementById('stars-container'),
+              weatherLayer = document.getElementById('weather-layer'),
+              highscoreEl = document.getElementById('highscore'), comboEl = document.getElementById('combo-display'),
+              barMagnet = document.getElementById('bar-magnet'), barShield = document.getElementById('bar-shield'),
+              barClock = document.getElementById('bar-clock');
 
-        // 物理常数
-        const GRAVITY = 0.8;
-        const JUMP_FORCE = -15;
-        const ACCEL = 1.2;
-        const FRICTION = 0.85;
-        const MAX_SPEED = 8;
-        const DASH_SPEED = 20;
+        const GRAVITY = 0.8, JUMP_FORCE = -15, ACCEL = 0.7, FRICTION = 0.88, MAX_SPEED = 4.5, DASH_SPEED = 12;
+        let gameState = 'START', hp = 100, energy = 100, score = 0, posX = 100, posY = 0, velX = 0, velY = 0,
+            isJumping = false, canDoubleJump = true, isDashing = false, facing = 'right',
+            cloudPos = 0, mountainPos = 0, treePos = 0, bushPos = 0, fgPos = 0,
+            gameObjects = [], spawnTimer = 0, gameTime = 0, starCount = 0, isFever = false, feverTimer = 0,
+            isRaining = false, combo = 0, invulTimer = 0, magnetTimer = 0,
+            shieldTimer = 0, slowMoTimer = 0, highScore = localStorage.getItem('sprite-rabbit-high-score') || 0;
 
-        // 游戏状态
-        let gameState = 'START';
-        let hp = 100;
-        let energy = 100;
-        let score = 0;
-        let posX = 100;
-        let posY = 0;
-        let velX = 0;
-        let velY = 0;
-        let isJumping = false;
-        let canDoubleJump = true;
-        let isDashing = false;
-        let facing = 'right';
-        let cloudPos = 0;
-        let mountainPos = 0;
-        let treePos = 0;
-        let bushPos = 0;
-        let fgPos = 0;
-        let gameObjects = [];
-        let spawnTimer = 0;
-        let gameTime = 0;
-        let starCount = 0;
-        let isFever = false;
-        let feverTimer = 0;
-        let isRaining = false;
-        let combo = 0;
-        let maxCombo = 0;
-        let invulTimer = 0;
-        let magnetTimer = 0;
+        highscoreEl.innerText = `HI: ${Math.floor(highScore).toString().padStart(4, '0')}`;
 
-        // 输入检测
         const keys = {};
-        window.addEventListener('keydown', e => {
-            if (e.code === 'ShiftLeft' || e.code === 'KeyK') handleDash();
-            keys[e.code] = true;
-        });
+        window.addEventListener('keydown', e => { if (e.code === 'ShiftLeft' || e.code === 'KeyK') handleDash(); keys[e.code] = true; });
         window.addEventListener('keyup', e => keys[e.code] = false);
+
+        // 移动端多点触控支持
+        function setupMobileControls() {
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
+            const btnJump = document.getElementById('btn-jump');
+
+            const handleTouch = (btn, code, state) => {
+                btn.addEventListener(state ? 'touchstart' : 'touchend', (e) => {
+                    e.preventDefault();
+                    keys[code] = state;
+                    if (state && code === 'Space') {
+                        // 触发跳跃逻辑
+                        keys['Space'] = true;
+                    }
+                }, { passive: false });
+            };
+
+            handleTouch(btnLeft, 'KeyA', true);
+            handleTouch(btnLeft, 'KeyA', false);
+            handleTouch(btnRight, 'KeyD', true);
+            handleTouch(btnRight, 'KeyD', false);
+            handleTouch(btnJump, 'Space', true);
+            handleTouch(btnJump, 'Space', false);
+            
+            // 增加长按冲刺支持 (移动端模拟)
+            btnJump.addEventListener('touchstart', (e) => {
+                const now = Date.now();
+                if (now - btnJump.lastTap < 300) {
+                    handleDash();
+                }
+                btnJump.lastTap = now;
+            });
+        }
+        setupMobileControls();
 
         function handleDash() {
             if (gameState !== 'PLAYING' || isDashing || energy < 30) return;
-            isDashing = true;
-            energy -= 30;
-            const dashDir = facing === 'right' ? 1 : -1;
-            velX = dashDir * DASH_SPEED;
-            playSound('jump'); // 借用跳跃音效
-            
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    const trail = document.createElement('div');
-                    trail.className = 'skill-fx dash-trail';
-                    trail.style.left = player.style.left;
-                    trail.style.bottom = player.style.bottom;
-                    const compStyle = window.getComputedStyle(player);
-                    trail.style.backgroundPositionX = compStyle.backgroundPositionX;
-                    trail.style.backgroundPositionY = compStyle.backgroundPositionY;
-                    objectLayer.appendChild(trail);
-                    setTimeout(() => trail.remove(), 300);
-                }, i * 40);
-            }
+            isDashing = true; energy -= 30; velX = (facing === 'right' ? 1 : -1) * DASH_SPEED;
+            playSound('jump');
             setTimeout(() => isDashing = false, 200);
         }
 
-        // 暴露给全局 onclick
         window.startGame = function() {
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            gameState = 'PLAYING';
-            hp = 100; energy = 100; score = 0; posX = 100; posY = 0; velX = 0; velY = 0;
-            gameTime = 0; starCount = 0; isFever = false;
-            viewport.classList.remove('night', 'fever');
-            player.classList.remove('fever-rabbit');
-            gameObjects.forEach(obj => obj.el && obj.el.remove());
-            gameObjects = [];
-            startScreen.style.display = 'none';
-            gameoverScreen.style.display = 'none';
-            errorCard.style.display = 'none';
-            hpFill.style.width = '100%';
-            energyFill.style.width = '100%';
-            scoreEl.innerText = `SCORE: 0000`;
+            gameState = 'PLAYING'; hp = 100; energy = 100; score = 0; posX = 100; posY = 0; velX = 0; velY = 0;
+            gameTime = 0; starCount = 0; isFever = false; combo = 0; magnetTimer = 0; invulTimer = 0;
+            shieldTimer = 0; slowMoTimer = 0;
+            viewport.classList.remove('night', 'fever', 'slow-mo-active'); 
+            player.classList.remove('fever-rabbit', 'magnet-active', 'shield-active');
+            barMagnet.style.display = barShield.style.display = barClock.style.display = 'none';
+            comboEl.style.display = 'none';
+            gameObjects.forEach(obj => obj.el && obj.el.remove()); gameObjects = [];
+            startScreen.style.display = 'none'; gameoverScreen.style.display = 'none';
+            hpFill.style.width = '100%'; energyFill.style.width = '100%'; scoreEl.innerText = `SCORE: 0000`;
         };
 
         window.gameOver = function() {
-            gameState = 'GAMEOVER';
-            playSound('hit');
-            viewport.classList.add('shake');
-            setTimeout(() => viewport.classList.remove('shake'), 300);
+            gameState = 'GAMEOVER'; playSound('hit');
+            viewport.classList.add('shake'); setTimeout(() => viewport.classList.remove('shake'), 300);
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('sprite-rabbit-high-score', highScore);
+                highscoreEl.innerText = `HI: ${Math.floor(highScore).toString().padStart(4, '0')}`;
+            }
+            
             gameoverScreen.style.display = 'flex';
             document.getElementById('final-score').innerText = `最终得分: ${Math.floor(score)}`;
         };
 
         function createFloatingText(x, y, text, color = '#fcd34d') {
-            const el = document.createElement('div');
-            el.className = 'floating-text';
-            el.style.left = x + 'px';
-            el.style.bottom = y + 'px';
-            el.style.color = color;
-            el.innerText = text;
-            viewport.appendChild(el);
-            setTimeout(() => el.remove(), 800);
+            const el = document.createElement('div'); el.className = 'floating-text';
+            el.style.left = x + 'px'; el.style.bottom = y + 'px'; el.style.color = color; el.innerText = text;
+            viewport.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function createBurst(x, y) {
             for (let i = 0; i < 8; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle-burst';
-                p.style.left = x + 'px';
-                p.style.bottom = y + 'px';
-                const angle = (i / 8) * Math.PI * 2;
-                const speed = 2 + Math.random() * 3;
-                const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed;
+                const p = document.createElement('div'); p.className = 'particle-burst';
+                p.style.left = x + 'px'; p.style.bottom = y + 'px';
+                const angle = (i / 8) * Math.PI * 2, speed = 2 + Math.random() * 3, vx = Math.cos(angle) * speed, vy = Math.sin(angle) * speed;
                 viewport.appendChild(p);
-                
                 let px = x, py = y, op = 1;
                 const anim = setInterval(() => {
-                    px += vx; py += vy; op -= 0.05;
-                    p.style.left = px + 'px';
-                    p.style.bottom = py + 'px';
-                    p.style.opacity = op;
+                    px += vx; py += vy; op -= 0.05; p.style.left = px + 'px'; p.style.bottom = py + 'px'; p.style.opacity = op;
                     if (op <= 0) { clearInterval(anim); p.remove(); }
                 }, 20);
             }
         }
 
         function triggerFever() {
-            isFever = true;
-            feverTimer = 300; // 5秒 (60fps * 5)
-            starCount = 0;
-            playSound('fever');
-            viewport.classList.add('fever');
-            player.classList.add('fever-rabbit');
+            isFever = true; feverTimer = 300; starCount = 0; playSound('collect');
+            viewport.classList.add('fever'); player.classList.add('fever-rabbit');
             createFloatingText(posX, 200, 'FEVER MODE!', '#fff');
         }
 
-        // 初始化背景星星
         function initStars() {
             for (let i = 0; i < 50; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 300 + 'px';
-                const size = 1 + Math.random() * 3;
-                star.style.width = size + 'px';
-                star.style.height = size + 'px';
-                star.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
-                starsContainer.appendChild(star);
+                const star = document.createElement('div'); star.className = 'star';
+                star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 300 + 'px';
+                const size = 1 + Math.random() * 3; star.style.width = size + 'px'; star.style.height = size + 'px';
+                star.style.setProperty('--duration', (2 + Math.random() * 3) + 's'); starsContainer.appendChild(star);
             }
         }
         initStars();
 
-        // 切换天气
-        function toggleWeather() {
-            isRaining = !isRaining;
-            weatherLayer.innerHTML = '';
-            if (isRaining) {
-                for (let i = 0; i < 30; i++) {
-                    const drop = document.createElement('div');
-                    drop.className = 'rain-drop';
-                    drop.style.left = Math.random() * 100 + '%';
-                    drop.style.animationDelay = Math.random() * 2 + 's';
-                    drop.style.opacity = 0.3 + Math.random() * 0.4;
-                    weatherLayer.appendChild(drop);
-                }
-            }
-        }
-
-        // 生成环境生物
-        function spawnEnvironmental() {
-            if (Math.random() > 0.99) {
-                const bird = document.createElement('div');
-                bird.className = 'bird';
-                bird.style.setProperty('--y', (50 + Math.random() * 150) + 'px');
-                bird.style.animationDuration = (5 + Math.random() * 5) + 's';
-                viewport.appendChild(bird);
-                setTimeout(() => bird.remove(), 10000);
-            }
-        }
-
-        // 检查图片并添加重试逻辑
-        function checkSprite() {
-            const img = new Image();
-            img.src = 'image/sprite.png';
-            img.onload = () => errorCard.style.display = 'none';
-            img.onerror = () => errorCard.style.display = 'flex';
-        }
-        checkSprite();
-
-        window.forceStart = function() {
-            errorCard.style.display = 'none';
-        };
-
         function spawnObject() {
             spawnTimer++;
-            // 随得分增加难度：生成频率变快
-            const difficultyScale = Math.min(60, Math.floor(score / 500) * 8); // 提高难度爬升速度
-            const spawnRate = Math.max(20, (isFever ? 12 : 70) - difficultyScale); // 降低初始生成间隔 (70帧一次)
+            // --- 动态难度调整：由易变难 ---
+            // 难度因子：随分数从 0 到 1 增长，10000分达到最大难度
+            const difficultyFactor = Math.min(1, score / 10000); 
+            // 初始生成间隔 160 (更慢)，最终缩短为 40 (更密集)
+            const spawnRate = isFever ? 20 : Math.max(40, Math.floor(160 - (120 * difficultyFactor))); 
             
             if (spawnTimer % spawnRate === 0) {
                 const rand = Math.random();
-                let type = 'obstacle';
-                // 提高障碍物比例：30% 几率是星星，70% 几率是障碍物
-                if (rand > 0.7) type = 'collectible';
-                if (rand > 0.98 && magnetTimer <= 0) type = 'magnet'; 
+                // 随着难度增加，障碍物比例逐渐上升
+                const obstacleThreshold = 0.6 + (0.15 * difficultyFactor); // 0.6 -> 0.75
+                let type = rand > obstacleThreshold ? 'collectible' : 'obstacle'; 
+                
+                // 道具生成几率：前期更高 (6%)，后期逐渐降低 (2%)
+                const itemThreshold = 0.94 + (0.04 * difficultyFactor);
+                if (rand > itemThreshold) {
+                    const items = ['magnet', 'shield', 'clock', 'potion'];
+                    type = items[Math.floor(Math.random() * items.length)];
+                }
+                if (isFever) type = 'collectible';
 
-                if (isFever) type = 'collectible'; 
-
-                const el = document.createElement('div');
-                el.className = `game-object ${type}`;
-                const obj = {
-                    el: el, type: type, x: 1000,
-                    y: (type !== 'obstacle') ? (100 + Math.random() * 250) : 45, // 降低 y 值，让石块深植于草丛中 (原来是 60)
-                    width: (type === 'magnet') ? 45 : (type === 'collectible' ? 40 : 50),
-                    height: (type === 'magnet') ? 45 : (type === 'collectible' ? 40 : 50)
-                };
-                objectLayer.appendChild(el);
-                gameObjects.push(obj);
+                const el = document.createElement('div'); el.className = `game-object ${type}`;
+                const obj = { el: el, type: type, x: 1000, y: (type !== 'obstacle') ? (100 + Math.random() * 250) : 45,
+                              width: (type === 'obstacle' || type === 'collectible') ? 40 : 45, 
+                              height: (type === 'obstacle' || type === 'collectible') ? 40 : 45 };
+                objectLayer.appendChild(el); gameObjects.push(obj);
             }
         }
 
         function updateObjects() {
-            // 难度随得分增加：移动速度变快
-            const currentSpeed = (isFever ? 12 : (5 + Math.min(10, score / 1000)));
+            // --- 动态速度调整：由易变难 ---
+            // 速度因子：8000分时达到最大速度
+            const speedFactor = Math.min(1, score / 8000);
+            let currentSpeed = (isFever ? 10 : (3.5 + (6.5 * speedFactor)));
+            if (slowMoTimer > 0) currentSpeed *= 0.5; // 时间减速效果
 
             for (let i = gameObjects.length - 1; i >= 0; i--) {
                 const obj = gameObjects[i];
-                
-                // 石块旋转逻辑
                 if (obj.type === 'obstacle') {
-                    if (!obj.rotation) obj.rotation = 0;
-                    obj.rotation -= currentSpeed * 2;
+                    if (!obj.rotation) obj.rotation = 0; obj.rotation -= currentSpeed * 2;
                     obj.el.style.transform = `rotate(${obj.rotation}deg)`;
                 }
-
-                // 磁铁逻辑：吸引星星
                 if (magnetTimer > 0 && obj.type === 'collectible') {
-                    const dx = posX + 50 - obj.x;
-                    const dy = (60 - posY + 50) - obj.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 400) {
-                        obj.x += dx * 0.15;
-                        obj.y += dy * 0.15;
-                    }
+                    const dx = posX + 50 - obj.x, dy = (45 - posY + 50) - obj.y, dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 400) { obj.x += dx * 0.15; obj.y += dy * 0.15; }
                 }
+                obj.x -= currentSpeed; obj.el.style.left = obj.x + 'px'; obj.el.style.bottom = obj.y + 'px';
 
-                obj.x -= currentSpeed;
-                obj.el.style.left = obj.x + 'px';
-                obj.el.style.bottom = obj.y + 'px';
-
+                // --- 碰撞判定优化：更宽容的判定范围 ---
                 const playerRect = { 
-                    left: posX + 25, 
-                    right: posX + 75, 
-                    bottom: 45 - posY, // 同步 Hitbox 高度
-                    top: 135 - posY 
+                    left: posX + 30, 
+                    right: posX + 70, 
+                    bottom: 45 - posY + 5, 
+                    top: 135 - posY - 10 
                 };
-                const objRect = { left: obj.x, right: obj.x + obj.width, bottom: obj.y, top: obj.y + obj.height };
+                const objRect = { 
+                    left: obj.x + 5, 
+                    right: obj.x + obj.width - 5, 
+                    bottom: obj.y + 5, 
+                    top: obj.y + obj.height - 5 
+                };
 
                 if (playerRect.left < objRect.right && playerRect.right > objRect.left && 
                     playerRect.bottom < objRect.top && playerRect.top > objRect.bottom) {
-                    
                     if (obj.type === 'collectible') {
-                        combo++;
-                        maxCombo = Math.max(maxCombo, combo);
-                        const comboBonus = Math.min(5, Math.floor(combo / 5)); // 每5连击+1倍得分
-                        const baseScore = isFever ? 200 : 100;
-                        const finalAdd = baseScore * (1 + comboBonus);
-                        
-                        score += finalAdd;
-                        energy = Math.min(100, energy + 15);
-                        starCount++;
-                        playSound('collect');
-                        createBurst(obj.x + 20, obj.y + 20);
-                        createFloatingText(obj.x, obj.y + 40, `+${finalAdd}${combo > 5 ? ' Combo!' : ''}`);
-                        
+                        combo++; 
+                        if (combo > 1) {
+                            comboEl.style.display = 'block';
+                            comboEl.innerText = `COMBO x${combo}`;
+                            comboEl.style.transform = 'scale(1.2)';
+                            setTimeout(() => comboEl.style.transform = 'scale(1)', 100);
+                        }
+                        score += (isFever ? 200 : 100) * (1 + Math.floor(combo / 10));
+                        energy = Math.min(100, energy + 15); starCount++; playSound('collect');
+                        createBurst(obj.x + 20, obj.y + 20); createFloatingText(obj.x, obj.y + 40, `+${isFever?200:100}`);
                         if (starCount >= 5 && !isFever) triggerFever();
-                        obj.el.remove();
-                        gameObjects.splice(i, 1);
                     } else if (obj.type === 'magnet') {
-                        magnetTimer = 300; // 5秒磁铁
-                        player.classList.add('magnet-active');
-                        createFloatingText(posX, 200, 'MAGNET!', '#38bdf8');
-                        playSound('fever');
-                        obj.el.remove();
-                        gameObjects.splice(i, 1);
+                        magnetTimer = 300; player.classList.add('magnet-active'); 
+                        createFloatingText(posX, 200, 'MAGNET!', '#38bdf8'); playSound('powerup');
+                    } else if (obj.type === 'shield') {
+                        shieldTimer = 300; player.classList.add('shield-active');
+                        createFloatingText(posX, 200, 'SHIELD!', '#fbbf24'); playSound('powerup');
+                    } else if (obj.type === 'clock') {
+                        slowMoTimer = 300; viewport.classList.add('slow-mo-active');
+                        createFloatingText(posX, 200, 'SLOW MOTION!', '#a855f7'); playSound('powerup');
+                    } else if (obj.type === 'potion') {
+                        hp = Math.min(100, hp + 20); hpFill.style.width = hp + '%';
+                        createFloatingText(posX, 200, 'HEAL!', '#ef4444'); playSound('heal');
                     } else {
-                        // 障碍物碰撞
-                        if (isFever || invulTimer > 0) {
-                            if (isFever) {
-                                score += 50;
-                                createBurst(obj.x + 25, obj.y + 25);
-                                playSound('collect');
+                        if (isFever || invulTimer > 0 || shieldTimer > 0) {
+                            if (shieldTimer > 0) {
+                                shieldTimer = 0; player.classList.remove('shield-active');
+                                invulTimer = 60; // 护盾破碎给一点无敌时间
+                                playSound('hit');
                             }
-                            obj.el.remove();
-                            gameObjects.splice(i, 1);
+                            if (isFever) { score += 50; createBurst(obj.x+25, obj.y+25); playSound('collect'); }
                         } else {
-                            hp -= 25;
-                            combo = 0; // 连击中断
-                            invulTimer = 90; // 1.5秒无敌
-                            hpFill.style.width = hp + '%';
-                            playSound('hit');
-                            viewport.classList.add('shake');
-                            setTimeout(() => viewport.classList.remove('shake'), 200);
-                            obj.el.remove();
-                            gameObjects.splice(i, 1);
+                            // --- 动态伤害：前期扣血少 (15)，后期扣血多 (25) ---
+                            const damage = 15 + Math.floor(10 * (Math.min(1, score / 10000)));
+                            hp -= damage; combo = 0; invulTimer = 120; 
+                            comboEl.style.display = 'none';
+                            hpFill.style.width = hp + '%'; playSound('hit');
+                            viewport.classList.add('shake'); setTimeout(() => viewport.classList.remove('shake'), 200);
                             player.style.filter = 'invert(1) brightness(2)';
                             if (hp <= 0) gameOver();
                         }
                     }
-                }
-                if (obj.x < -100) { obj.el.remove(); gameObjects.splice(i, 1); }
+                    obj.el.remove(); gameObjects.splice(i, 1);
+                } else if (obj.x < -100) { obj.el.remove(); gameObjects.splice(i, 1); }
             }
         }
 
         function createDust() {
-            if (document.querySelectorAll('.dust').length > 15) return;
-            if (Math.abs(velX) < 2 || isJumping) return;
-            const dust = document.createElement('div');
-            dust.className = 'dust';
-            dust.style.left = (posX + (facing === 'right' ? 20 : 60)) + 'px';
-            dust.style.bottom = (60 + Math.random() * 5) + 'px';
+            if (document.querySelectorAll('.dust').length > 10 || Math.abs(velX) < 2 || isJumping) return;
+            const dust = document.createElement('div'); dust.className = 'dust';
+            dust.style.left = (posX + (facing === 'right' ? 20 : 60)) + 'px'; dust.style.bottom = (45 + Math.random() * 5) + 'px';
             objectLayer.appendChild(dust);
             let dustY = 0, dustOpacity = 1;
             const anim = setInterval(() => {
-                dustY += 1.5; dustOpacity -= 0.08;
-                dust.style.transform = `translateY(-${dustY}px) scale(${1 + dustY/15})`;
-                dust.style.opacity = dustOpacity;
-                if (dustOpacity <= 0) { clearInterval(anim); if (dust.parentNode) dust.remove(); }
+                dustY += 1.5; dustOpacity -= 0.08; dust.style.transform = `translateY(-${dustY}px) scale(${1 + dustY/15})`;
+                dust.style.opacity = dustOpacity; if (dustOpacity <= 0) { clearInterval(anim); if (dust.parentNode) dust.remove(); }
             }, 40);
         }
 
         function update() {
             if (gameState === 'PLAYING') {
                 gameTime++;
-                if (isFever) {
-                    feverTimer--;
-                    if (feverTimer <= 0) {
-                        isFever = false;
-                        viewport.classList.remove('fever');
-                        player.classList.remove('fever-rabbit');
-                    }
-                }
-
-                // 无敌闪烁逻辑
-                if (invulTimer > 0) {
-                    invulTimer--;
-                    player.style.opacity = (Math.floor(invulTimer / 5) % 2 === 0) ? "1" : "0.3";
-                    if (invulTimer <= 0) {
-                        player.style.opacity = "1";
-                        player.style.filter = "";
-                    }
-                }
-
+                if (isFever) { feverTimer--; if (feverTimer <= 0) { isFever = false; viewport.classList.remove('fever'); player.classList.remove('fever-rabbit'); } }
+                if (invulTimer > 0) { invulTimer--; player.style.opacity = (Math.floor(invulTimer / 5) % 2 === 0) ? "1" : "0.3"; if (invulTimer <= 0) { player.style.opacity = "1"; player.style.filter = ""; } }
                 // 磁铁倒计时
                 if (magnetTimer > 0) {
                     magnetTimer--;
-                    if (magnetTimer <= 0) player.classList.remove('magnet-active');
+                    barMagnet.style.display = 'block';
+                    barMagnet.style.width = (magnetTimer / 3) + 'px';
+                    if (magnetTimer <= 0) {
+                        player.classList.remove('magnet-active');
+                        barMagnet.style.display = 'none';
+                    }
                 }
 
-                // 昼夜交替 (每 30 秒切换一次)
-                if (gameTime % 1800 === 900) {
-                    viewport.classList.toggle('night');
-                    if (Math.random() > 0.5) toggleWeather(); // 切换昼夜时有概率切换天气
+                // 护盾倒计时
+                if (shieldTimer > 0) {
+                    shieldTimer--;
+                    barShield.style.display = 'block';
+                    barShield.style.width = (shieldTimer / 3) + 'px';
+                    if (shieldTimer <= 0) {
+                        player.classList.remove('shield-active');
+                        barShield.style.display = 'none';
+                    }
                 }
-                
-                spawnEnvironmental();
-                energy = Math.min(100, energy + (isFever ? 0.5 : 0.1));
-                energyFill.style.width = energy + '%';
+
+                // 时间减速倒计时
+                if (slowMoTimer > 0) {
+                    slowMoTimer--;
+                    barClock.style.display = 'block';
+                    barClock.style.width = (slowMoTimer / 3) + 'px';
+                    if (slowMoTimer <= 0) {
+                        viewport.classList.remove('slow-mo-active');
+                        barClock.style.display = 'none';
+                    }
+                }
+                if (gameTime % 1800 === 900) viewport.classList.toggle('night');
+                energy = Math.min(100, energy + (isFever ? 0.5 : 0.15)); energyFill.style.width = energy + '%';
 
                 if (!isDashing) {
                     if (keys['KeyD'] || keys['ArrowRight']) { velX += ACCEL; facing = 'right'; }
@@ -1140,34 +1063,21 @@
                 if (!isDashing) velX = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, velX));
 
                 if (keys['Space'] || keys['KeyW'] || keys['ArrowUp']) {
-                    if (!isJumping) {
-                        velY = JUMP_FORCE; isJumping = true; canDoubleJump = true;
-                        playSound('jump');
-                        keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false;
-                    } else if (canDoubleJump) {
-                        velY = JUMP_FORCE * 0.8; canDoubleJump = false;
-                        playSound('jump');
-                        keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false;
-                    }
+                    if (!isJumping) { velY = JUMP_FORCE; isJumping = true; canDoubleJump = true; playSound('jump'); keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false; }
+                    else if (canDoubleJump) { velY = JUMP_FORCE * 0.8; canDoubleJump = false; playSound('jump'); keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false; }
                 }
 
-                velY += GRAVITY;
-                posY += velY;
+                velY += GRAVITY; posY += velY;
                 if (posY > 0) { posY = 0; velY = 0; isJumping = false; }
-
-                posX += velX;
-                if (posX < 0) posX = 0;
-                if (posX > 900) posX = 900;
+                posX += velX; posX = Math.max(0, Math.min(900, posX));
 
                 let animClass = isJumping ? (facing === 'right' ? 'anim-jump-right' : 'anim-jump-left') :
                                (Math.abs(velX) > 0.5 ? (facing === 'right' ? 'anim-run-right' : 'anim-run-left') :
                                (facing === 'right' ? 'anim-idle-right' : 'anim-idle-left'));
                 
-                const runSpeed = 1.2 - (Math.abs(velX) / (isFever ? 15 : MAX_SPEED));
-                player.style.animationDuration = `${Math.max(0.2, runSpeed)}s`;
+                player.style.animationDuration = `${Math.max(0.2, 1.2 - (Math.abs(velX) / (isFever ? 15 : MAX_SPEED)))}s`;
                 player.className = animClass + (isDashing ? ' dashing' : '');
-                player.style.left = posX + 'px';
-                player.style.bottom = (45 - posY) + 'px'; // 基础高度下调至 45px (原来 60)
+                player.style.left = posX + 'px'; player.style.bottom = (45 - posY) + 'px';
 
                 shadow.style.left = posX + 'px';
                 const shadowScale = 1 - (Math.abs(posY) / 200);
@@ -1175,28 +1085,26 @@
                 shadow.style.opacity = Math.max(0.1, shadowScale);
 
                 const scrollBase = isFever ? 3 : 1;
-                cloudPos -= (velX * 0.1 + scrollBase);
-                mountainPos -= (velX * 0.2 + scrollBase * 2);
-                treePos -= (velX * 0.4 + scrollBase * 3);
-                bushPos -= (velX * 0.7 + scrollBase * 5);
-                fgPos -= (velX * 1.5 + scrollBase * 8);
+                cloudPos -= (velX * 0.05 + scrollBase * 0.5);
+                mountainPos -= (velX * 0.1 + scrollBase);
+                treePos -= (velX * 0.2 + scrollBase * 2);
+                bushPos -= (velX * 0.4 + scrollBase * 3);
+                fgPos -= (velX * 0.8 + scrollBase * 5);
                 
-                clouds.style.transform = `translateX(${cloudPos % 1000}px)`;
-                mountains.style.transform = `translateX(${mountainPos % 1000}px)`;
-                trees.style.transform = `translateX(${treePos % 1000}px)`;
-                bushes.style.transform = `translateX(${bushPos % 1000}px)`;
-                foreground.style.transform = `translateX(${fgPos % 1000}px)`;
+                clouds.style.backgroundPositionX = cloudPos + 'px';
+                mountains.style.backgroundPositionX = mountainPos + 'px';
+                trees.style.backgroundPositionX = treePos + 'px';
+                bushes.style.backgroundPositionX = bushPos + 'px';
+                foreground.style.backgroundPositionX = fgPos + 'px';
                 
-                score += isFever ? 1 : 0.2;
-                scoreEl.innerText = `SCORE: ${Math.floor(score).toString().padStart(4, '0')}`;
-
+                score += isFever ? 1 : 0.2; scoreEl.innerText = `SCORE: ${Math.floor(score).toString().padStart(4, '0')}`;
                 if (Math.abs(velX) > 0.5 && !isJumping && Math.random() > 0.8) createDust();
-                spawnObject();
-                updateObjects();
+                spawnObject(); updateObjects();
             }
             requestAnimationFrame(update);
         }
         update();
+        function forceStart() { errorCard.style.display = 'none'; }
     </script>
 </body>
 </html>
