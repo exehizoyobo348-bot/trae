@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>精灵兔大冒险 - Premium Sprite Engine</title>
+    <style>
+        :root {
+            --rabbit-w: 100px;
+            --rabbit-h: 100px;
+            --sky-blue: #87CEEB;
+            --grass-green: #2ecc71;
+            --soil-brown: #795548;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: #0f172a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Press Start 2P', 'Segoe UI', cursive;
+        }
+
+        /* 昼夜交替背景 */
+        #game-viewport {
+            position: relative;
+            width: 1000px;
+            height: 500px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+            border: 10px solid #1e293b;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            transition: background 10s ease;
+        }
+
+        #game-viewport.night {
+            background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+        }
+
+        /* 天体：太阳/月亮 */
+        #celestial {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            top: 60px;
+            right: 100px;
+            background: #FFD700;
+            box-shadow: 0 0 30px #FFD700;
+            transition: all 10s ease;
+            z-index: 0;
+        }
+
+        #game-viewport.night #celestial {
+            background: #F0F0F0;
+            box-shadow: 0 0 20px #F0F0F0;
+            transform: translate(-100px, 300px); /* 模拟落下 */
+        }
+
+        /* 繁星背景 */
+        #stars-container {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 5s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #game-viewport.night #stars-container {
+            opacity: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.3; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* 天气：雨点 */
+        #weather-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            animation: rainFall 0.5s linear infinite;
+        }
+
+        @keyframes rainFall {
+            from { transform: translateY(-20px) rotate(15deg); }
+            to { transform: translateY(520px) rotate(15deg); }
+        }
+
+        /* 技能特效 */
+        .skill-fx {
+            position: absolute;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .dash-trail {
+            width: 100px;
+            height: 100px;
+            background-image: url('image/sprite.png');
+            background-size: 800% 200%;
+            opacity: 0.5;
+            z-index: 9;
+            pointer-events: none;
+            animation: fadeOut 0.4s forwards;
+            image-rendering: pixelated;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 0; transform: scale(1.2); }
+        }
+
+        /* 屏幕抖动 */
+        .shake {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* 能量条 */
+        .energy-container {
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+            position: relative;
+        }
+
+        #energy-fill {
+            width: 100%;
+            height: 100%;
+            background: #38bdf8;
+            transition: width 0.1s linear;
+        }
+
+        /* 狂暴模式特效 */
+        #game-viewport.fever {
+            animation: rainbowBg 1s infinite;
+        }
+
+        @keyframes rainbowBg {
+            0% { border-color: #ff0000; box-shadow: 0 0 30px #ff0000; }
+            33% { border-color: #00ff00; box-shadow: 0 0 30px #00ff00; }
+            66% { border-color: #0000ff; box-shadow: 0 0 30px #0000ff; }
+            100% { border-color: #ff0000; box-shadow: 0 0 30px #ff0000; }
+        }
+
+        .fever-rabbit {
+            filter: hue-rotate(90deg) brightness(1.5) drop-shadow(0 0 15px #fff) !important;
+        }
+
+        /* 连击与分数浮动 */
+        .floating-text {
+            position: absolute;
+            color: #fcd34d;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 200;
+            animation: floatUp 0.8s ease-out forwards;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+
+        /* 爆炸粒子 */
+        .particle-burst {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fcd34d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 150;
+        }
+
+        /* 视差背景层基类 */
+        .parallax-layer {
+            position: absolute;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            will-change: transform;
+            pointer-events: none; /* 默认不拦截点击，让 UI 可点 */
+        }
+
+        /* 远景：云朵 (置于顶部) */
+        .layer-clouds {
+            background: url('https://api.iconify.design/mdi:cloud.svg?color=white&alpha=0.4') repeat-x;
+            background-size: 150px;
+            top: 40px;
+            height: 120px;
+            opacity: 0.6;
+            z-index: 1;
+        }
+
+        /* 中景：远山 (贴合底部) */
+        .layer-mountains {
+            background: url('https://api.iconify.design/mdi:mountain.svg?color=%235c8e9d') repeat-x bottom;
+            background-size: 300px 200px;
+            height: 400px; /* 给一个足够高的高度 */
+            bottom: 60px;
+            opacity: 0.5;
+            z-index: 2;
+        }
+
+        /* 装饰：树木 (中远景) */
+        .layer-trees {
+            background: url('https://api.iconify.design/mdi:tree.svg?color=%231e3a1a') repeat-x bottom;
+            background-size: 150px 180px;
+            height: 180px;
+            bottom: 60px;
+            z-index: 3;
+            opacity: 0.6;
+            animation: sway 6s ease-in-out infinite alternate;
+            transform-origin: bottom center;
+        }
+
+        /* 装饰：灌木 (中近景) */
+        .layer-bushes {
+            background: url('https://api.iconify.design/mdi:leaf.svg?color=%232d5a27') repeat-x bottom;
+            background-size: 80px 60px;
+            height: 60px;
+            bottom: 60px;
+            z-index: 4;
+            opacity: 0.9;
+            animation: sway 3s ease-in-out infinite alternate-reverse;
+            transform-origin: bottom center;
+        }
+
+        @keyframes sway {
+            from { transform: skewX(-2deg); }
+            to { transform: skewX(2deg); }
+        }
+
+        /* 飞鸟/蝙蝠 */
+        .bird {
+            position: absolute;
+            width: 20px;
+            height: 15px;
+            background: url('https://api.iconify.design/mdi:bird.svg?color=black') no-repeat center;
+            background-size: contain;
+            z-index: 3;
+            animation: fly linear infinite;
+        }
+
+        #game-viewport.night .bird {
+            background: url('https://api.iconify.design/mdi:bat.svg?color=black') no-repeat center;
+            background-size: contain;
+        }
+
+        @keyframes fly {
+            from { transform: translateX(1100px) translateY(var(--y)); }
+            to { transform: translateX(-100px) translateY(var(--y)); }
+        }
+
+        /* 近景：草地 (最重要的基准层) */
+        .layer-grass {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to bottom, #2ecc71 0%, #27ae60 100%);
+            z-index: 5;
+            border-top: 4px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* 前景：模糊草丛 (覆盖在最前面) */
+        .layer-foreground {
+            background: url('https://api.iconify.design/mdi:grass.svg?color=%231a4016') repeat-x bottom;
+            background-size: 200px 100px;
+            height: 100px;
+            bottom: -20px;
+            z-index: 100;
+            opacity: 0.5;
+            filter: blur(4px);
+            width: 300%;
+        }
+
+        /* 角色阴影 */
+        #shadow {
+            position: absolute;
+            width: 60px;
+            height: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 50%;
+            bottom: 45px; /* 下调阴影位置 (原来 54) */
+            left: 0;
+            z-index: 9;
+            transform: translateX(20px);
+            transition: transform 0.1s linear, width 0.1s;
+        }
+
+        /* 尘土粒子 */
+        .dust {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 8;
+        }
+
+        /* 精灵兔角色 */
+        #player {
+            position: absolute;
+            width: var(--rabbit-w);
+            height: var(--rabbit-h);
+            bottom: 60px;
+            left: 100px;
+            background-image: url('image/sprite.png');
+            background-size: 800px 200px; /* 明确使用 800px 以对应 8 个 100px 宽的帧 */
+            z-index: 10;
+            image-rendering: pixelated;
+            transition: transform 0.2s ease, filter 0.2s; /* 增加 transform 平滑过渡 */
+        }
+
+        /* 动画类优化 */
+        .anim-run-right { 
+            animation: run 0.6s steps(8) infinite; 
+            background-position-y: 0;
+            transform: skewX(-5deg); /* 向右跑时身体微倾，增加速度感 */
+        }
+        .anim-run-left { 
+            animation: run 0.6s steps(8) infinite; 
+            background-position-y: 100%;
+            transform: skewX(5deg); /* 向左跑时身体微倾 */
+        }
+        .anim-idle-right { background-position: 0 0; transform: scale(1); }
+        .anim-idle-left { background-position: 0 100%; transform: scale(1); }
+        
+        /* 改进跳跃姿势：根据速度缩放角色 */
+        .anim-jump-right { 
+            background-position: -200px 0; /* 使用第3帧作为跳跃核心帧 */
+            transform: scale(0.95, 1.1); /* 跳跃时纵向拉伸 */
+        } 
+        .anim-jump-left { 
+            background-position: -200px 100%; 
+            transform: scale(0.95, 1.1);
+        }
+
+        /* 冲刺姿势：极度倾斜 */
+        .dashing {
+            transform: skewX(-15deg) scale(1.1, 0.9) !important;
+            filter: brightness(1.5) drop-shadow(0 0 10px #38bdf8);
+        }
+        .anim-run-left.dashing { transform: skewX(15deg) scale(1.1, 0.9) !important; }
+
+        @keyframes run {
+            from { background-position-x: 0; }
+            to { background-position-x: -800px; }
+        }
+
+        /* UI 与 提示 */
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            color: #1e293b;
+            text-transform: uppercase;
+            font-size: 14px;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 血条样式 */
+        .hp-bar-container {
+            width: 200px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #hp-fill {
+            width: 100%;
+            height: 100%;
+            background: #ef4444;
+            transition: width 0.3s ease;
+        }
+
+        /* 游戏物体层 (动态生成) */
+        #object-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 8; /* 确保在草地之上，玩家之下 */
+            pointer-events: none;
+        }
+
+        .game-object {
+            position: absolute;
+            z-index: 8;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transform-origin: center center; /* 确保旋转中心在几何中心 */
+        }
+
+        .collectible {
+            width: 40px;
+            height: 40px;
+            background-image: url('https://api.iconify.design/mdi:star.svg?color=%23fcd34d');
+            animation: bounce 1s infinite alternate;
+        }
+
+        .magnet {
+            width: 45px;
+            height: 45px;
+            background-image: url('https://api.iconify.design/mdi:magnet.svg?color=%2338bdf8');
+            animation: pulse 0.5s infinite alternate;
+            filter: drop-shadow(0 0 10px #38bdf8);
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
+        /* 磁铁生效特效 */
+        .magnet-active::after {
+            content: "";
+            position: absolute;
+            inset: -20px;
+            border: 2px dashed #38bdf8;
+            border-radius: 50%;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .obstacle {
+            width: 50px;
+            height: 50px;
+            background: #4b5563;
+            /* 利用 clip-path 打造不规则多边形岩石形状 */
+            clip-path: polygon(20% 0%, 80% 0%, 100% 40%, 90% 90%, 50% 100%, 10% 90%, 0% 40%);
+            border: none;
+            /* 移除 position: relative，确保继承 .game-object 的 absolute 定位 */
+            box-shadow: inset -5px -5px 0 rgba(0,0,0,0.3); /* 内部阴影增强立体感 */
+        }
+
+        /* 增加岩石纹理和阴影层 */
+        .obstacle::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.2) 50%);
+            z-index: 1;
+        }
+
+        .obstacle::after {
+            content: "";
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 40%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            transform: rotate(-30deg);
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        /* 覆盖层界面 */
+        .screen-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            color: white;
+        }
+
+        .btn-start {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #2ecc71;
+            border: none;
+            border-radius: 100px;
+            color: white;
+            font-family: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #27ae60;
+            transition: all 0.1s;
+        }
+
+        .btn-start:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #27ae60;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            padding: 0 30px;
+            justify-content: space-between;
+            z-index: 1000;
+        }
+
+        .btn-circle {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            touch-action: none;
+        }
+
+        .btn-circle:active { background: rgba(255,255,255,0.4); }
+
+        /* 错误提示 */
+        #error-card {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            #game-viewport { width: 95vw; height: 60vh; border-width: 5px; }
+            .mobile-controls { display: flex; }
+            .controls-info { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-viewport">
+        <!-- 天体 -->
+        <div id="celestial"></div>
+        <div id="stars-container"></div>
+        <div id="weather-layer"></div>
+
+        <!-- 视差层 -->
+        <div class="parallax-layer layer-clouds" id="clouds"></div>
+        <div class="parallax-layer layer-mountains" id="mountains"></div>
+        <div class="parallax-layer layer-trees" id="trees"></div>
+        <div class="parallax-layer layer-bushes" id="bushes"></div>
+        
+        <!-- 装饰物 -->
+        <div id="shadow"></div>
+        
+        <!-- 角色 -->
+        <div id="player"></div>
+        
+        <!-- 地面层 -->
+        <div class="layer-grass"></div>
+
+        <!-- 前景装饰 (在所有东西最前面) -->
+        <div class="parallax-layer layer-foreground" id="foreground"></div>
+
+        <!-- 游戏物体层 (动态生成) -->
+        <div id="object-layer"></div>
+
+        <!-- UI -->
+        <div class="ui-overlay">
+            <div class="hp-bar-container">
+                <div id="hp-fill"></div>
+            </div>
+            <div class="energy-container">
+                <div id="energy-fill"></div>
+            </div>
+            <div id="score">SCORE: 0000</div>
+        </div>
+
+        <!-- 开始界面 -->
+        <div id="start-screen" class="screen-overlay">
+            <h1 style="font-size: 40px; text-shadow: 0 5px 0 #1e293b;">精灵兔大冒险</h1>
+            <p style="margin-top: 10px; color: #94a3b8;">奔跑、跳跃、收集星星！</p>
+            <button class="btn-start" onclick="startGame()">开始游戏</button>
+        </div>
+
+        <!-- 游戏结束界面 -->
+        <div id="gameover-screen" class="screen-overlay" style="display: none;">
+            <h1 style="font-size: 40px; color: #ef4444;">游戏结束</h1>
+            <p id="final-score" style="margin-top: 10px;"></p>
+            <button class="btn-start" onclick="startGame()" style="background: #f59e0b; box-shadow: 0 10px 0 #d97706;">重新挑战</button>
+        </div>
+
+        <div class="controls-info">
+            <p><kbd>A</kbd> <kbd>D</kbd> 左右移动</p>
+            <p><kbd>SPACE</kbd> / <kbd>W</kbd> 跳跃</p>
+            <p><kbd>SHIFT</kbd> / <kbd>K</kbd> 冲刺</p>
+        </div>
+
+        <div id="error-card">
+            <h2 style="margin-bottom: 20px;">⚠️ 精灵图加载失败</h2>
+            <p style="color: #94a3b8; line-height: 1.6; font-size: 14px;">
+                1. 确保文件名为 <b style="color: white;">sprite.png</b> (注意后缀名)<br>
+                2. 确保文件放在 <b style="color: white;">image</b> 文件夹内<br>
+                3. 当前尝试路径: <span style="color: #38bdf8;">image/sprite.png</span>
+            </p>
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button class="btn-start" onclick="location.reload()" style="margin-top:0; font-size:14px; padding:10px 20px;">重试加载</button>
+                <button class="btn-start" onclick="forceStart()" style="margin-top:0; font-size:14px; padding:10px 20px; background:#64748b; box-shadow:0 6px 0 #475569;">跳过检查</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端控制 -->
+    <div class="mobile-controls">
+        <div style="display: flex; gap: 20px;">
+            <div class="btn-circle" id="btn-left">←</div>
+            <div class="btn-circle" id="btn-right">→</div>
+        </div>
+        <div class="btn-circle" id="btn-jump">J</div>
+    </div>
+
+    <script>
+        // 音效系统 (Web Audio API)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+            if (type === 'jump') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start();
+                osc.stop(now + 0.1);
+            } else if (type === 'collect') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start();
+                osc.stop(now + 0.2);
+            } else if (type === 'hit') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(10, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start();
+                osc.stop(now + 0.2);
+            } else if (type === 'fever') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.5);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start();
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // 游戏引擎变量
+        const player = document.getElementById('player');
+        const shadow = document.getElementById('shadow');
+        const clouds = document.getElementById('clouds');
+        const mountains = document.getElementById('mountains');
+        const trees = document.getElementById('trees');
+        const bushes = document.getElementById('bushes');
+        const foreground = document.getElementById('foreground');
+        const scoreEl = document.getElementById('score');
+        const hpFill = document.getElementById('hp-fill');
+        const energyFill = document.getElementById('energy-fill');
+        const objectLayer = document.getElementById('object-layer');
+        const startScreen = document.getElementById('start-screen');
+        const gameoverScreen = document.getElementById('gameover-screen');
+        const errorCard = document.getElementById('error-card');
+        const viewport = document.getElementById('game-viewport');
+        const starsContainer = document.getElementById('stars-container');
+        const weatherLayer = document.getElementById('weather-layer');
+
+        // 物理常数
+        const GRAVITY = 0.8;
+        const JUMP_FORCE = -15;
+        const ACCEL = 1.2;
+        const FRICTION = 0.85;
+        const MAX_SPEED = 8;
+        const DASH_SPEED = 20;
+
+        // 游戏状态
+        let gameState = 'START';
+        let hp = 100;
+        let energy = 100;
+        let score = 0;
+        let posX = 100;
+        let posY = 0;
+        let velX = 0;
+        let velY = 0;
+        let isJumping = false;
+        let canDoubleJump = true;
+        let isDashing = false;
+        let facing = 'right';
+        let cloudPos = 0;
+        let mountainPos = 0;
+        let treePos = 0;
+        let bushPos = 0;
+        let fgPos = 0;
+        let gameObjects = [];
+        let spawnTimer = 0;
+        let gameTime = 0;
+        let starCount = 0;
+        let isFever = false;
+        let feverTimer = 0;
+        let isRaining = false;
+        let combo = 0;
+        let maxCombo = 0;
+        let invulTimer = 0;
+        let magnetTimer = 0;
+
+        // 输入检测
+        const keys = {};
+        window.addEventListener('keydown', e => {
+            if (e.code === 'ShiftLeft' || e.code === 'KeyK') handleDash();
+            keys[e.code] = true;
+        });
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function handleDash() {
+            if (gameState !== 'PLAYING' || isDashing || energy < 30) return;
+            isDashing = true;
+            energy -= 30;
+            const dashDir = facing === 'right' ? 1 : -1;
+            velX = dashDir * DASH_SPEED;
+            playSound('jump'); // 借用跳跃音效
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const trail = document.createElement('div');
+                    trail.className = 'skill-fx dash-trail';
+                    trail.style.left = player.style.left;
+                    trail.style.bottom = player.style.bottom;
+                    const compStyle = window.getComputedStyle(player);
+                    trail.style.backgroundPositionX = compStyle.backgroundPositionX;
+                    trail.style.backgroundPositionY = compStyle.backgroundPositionY;
+                    objectLayer.appendChild(trail);
+                    setTimeout(() => trail.remove(), 300);
+                }, i * 40);
+            }
+            setTimeout(() => isDashing = false, 200);
+        }
+
+        // 暴露给全局 onclick
+        window.startGame = function() {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            gameState = 'PLAYING';
+            hp = 100; energy = 100; score = 0; posX = 100; posY = 0; velX = 0; velY = 0;
+            gameTime = 0; starCount = 0; isFever = false;
+            viewport.classList.remove('night', 'fever');
+            player.classList.remove('fever-rabbit');
+            gameObjects.forEach(obj => obj.el && obj.el.remove());
+            gameObjects = [];
+            startScreen.style.display = 'none';
+            gameoverScreen.style.display = 'none';
+            errorCard.style.display = 'none';
+            hpFill.style.width = '100%';
+            energyFill.style.width = '100%';
+            scoreEl.innerText = `SCORE: 0000`;
+        };
+
+        window.gameOver = function() {
+            gameState = 'GAMEOVER';
+            playSound('hit');
+            viewport.classList.add('shake');
+            setTimeout(() => viewport.classList.remove('shake'), 300);
+            gameoverScreen.style.display = 'flex';
+            document.getElementById('final-score').innerText = `最终得分: ${Math.floor(score)}`;
+        };
+
+        function createFloatingText(x, y, text, color = '#fcd34d') {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.style.left = x + 'px';
+            el.style.bottom = y + 'px';
+            el.style.color = color;
+            el.innerText = text;
+            viewport.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function createBurst(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle-burst';
+                p.style.left = x + 'px';
+                p.style.bottom = y + 'px';
+                const angle = (i / 8) * Math.PI * 2;
+                const speed = 2 + Math.random() * 3;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                viewport.appendChild(p);
+                
+                let px = x, py = y, op = 1;
+                const anim = setInterval(() => {
+                    px += vx; py += vy; op -= 0.05;
+                    p.style.left = px + 'px';
+                    p.style.bottom = py + 'px';
+                    p.style.opacity = op;
+                    if (op <= 0) { clearInterval(anim); p.remove(); }
+                }, 20);
+            }
+        }
+
+        function triggerFever() {
+            isFever = true;
+            feverTimer = 300; // 5秒 (60fps * 5)
+            starCount = 0;
+            playSound('fever');
+            viewport.classList.add('fever');
+            player.classList.add('fever-rabbit');
+            createFloatingText(posX, 200, 'FEVER MODE!', '#fff');
+        }
+
+        // 初始化背景星星
+        function initStars() {
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 300 + 'px';
+                const size = 1 + Math.random() * 3;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
+                starsContainer.appendChild(star);
+            }
+        }
+        initStars();
+
+        // 切换天气
+        function toggleWeather() {
+            isRaining = !isRaining;
+            weatherLayer.innerHTML = '';
+            if (isRaining) {
+                for (let i = 0; i < 30; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.style.left = Math.random() * 100 + '%';
+                    drop.style.animationDelay = Math.random() * 2 + 's';
+                    drop.style.opacity = 0.3 + Math.random() * 0.4;
+                    weatherLayer.appendChild(drop);
+                }
+            }
+        }
+
+        // 生成环境生物
+        function spawnEnvironmental() {
+            if (Math.random() > 0.99) {
+                const bird = document.createElement('div');
+                bird.className = 'bird';
+                bird.style.setProperty('--y', (50 + Math.random() * 150) + 'px');
+                bird.style.animationDuration = (5 + Math.random() * 5) + 's';
+                viewport.appendChild(bird);
+                setTimeout(() => bird.remove(), 10000);
+            }
+        }
+
+        // 检查图片并添加重试逻辑
+        function checkSprite() {
+            const img = new Image();
+            img.src = 'image/sprite.png';
+            img.onload = () => errorCard.style.display = 'none';
+            img.onerror = () => errorCard.style.display = 'flex';
+        }
+        checkSprite();
+
+        window.forceStart = function() {
+            errorCard.style.display = 'none';
+        };
+
+        function spawnObject() {
+            spawnTimer++;
+            // 随得分增加难度：生成频率变快
+            const difficultyScale = Math.min(60, Math.floor(score / 500) * 8); // 提高难度爬升速度
+            const spawnRate = Math.max(20, (isFever ? 12 : 70) - difficultyScale); // 降低初始生成间隔 (70帧一次)
+            
+            if (spawnTimer % spawnRate === 0) {
+                const rand = Math.random();
+                let type = 'obstacle';
+                // 提高障碍物比例：30% 几率是星星，70% 几率是障碍物
+                if (rand > 0.7) type = 'collectible';
+                if (rand > 0.98 && magnetTimer <= 0) type = 'magnet'; 
+
+                if (isFever) type = 'collectible'; 
+
+                const el = document.createElement('div');
+                el.className = `game-object ${type}`;
+                const obj = {
+                    el: el, type: type, x: 1000,
+                    y: (type !== 'obstacle') ? (100 + Math.random() * 250) : 45, // 降低 y 值，让石块深植于草丛中 (原来是 60)
+                    width: (type === 'magnet') ? 45 : (type === 'collectible' ? 40 : 50),
+                    height: (type === 'magnet') ? 45 : (type === 'collectible' ? 40 : 50)
+                };
+                objectLayer.appendChild(el);
+                gameObjects.push(obj);
+            }
+        }
+
+        function updateObjects() {
+            // 难度随得分增加：移动速度变快
+            const currentSpeed = (isFever ? 12 : (5 + Math.min(10, score / 1000)));
+
+            for (let i = gameObjects.length - 1; i >= 0; i--) {
+                const obj = gameObjects[i];
+                
+                // 石块旋转逻辑
+                if (obj.type === 'obstacle') {
+                    if (!obj.rotation) obj.rotation = 0;
+                    obj.rotation -= currentSpeed * 2;
+                    obj.el.style.transform = `rotate(${obj.rotation}deg)`;
+                }
+
+                // 磁铁逻辑：吸引星星
+                if (magnetTimer > 0 && obj.type === 'collectible') {
+                    const dx = posX + 50 - obj.x;
+                    const dy = (60 - posY + 50) - obj.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 400) {
+                        obj.x += dx * 0.15;
+                        obj.y += dy * 0.15;
+                    }
+                }
+
+                obj.x -= currentSpeed;
+                obj.el.style.left = obj.x + 'px';
+                obj.el.style.bottom = obj.y + 'px';
+
+                const playerRect = { 
+                    left: posX + 25, 
+                    right: posX + 75, 
+                    bottom: 45 - posY, // 同步 Hitbox 高度
+                    top: 135 - posY 
+                };
+                const objRect = { left: obj.x, right: obj.x + obj.width, bottom: obj.y, top: obj.y + obj.height };
+
+                if (playerRect.left < objRect.right && playerRect.right > objRect.left && 
+                    playerRect.bottom < objRect.top && playerRect.top > objRect.bottom) {
+                    
+                    if (obj.type === 'collectible') {
+                        combo++;
+                        maxCombo = Math.max(maxCombo, combo);
+                        const comboBonus = Math.min(5, Math.floor(combo / 5)); // 每5连击+1倍得分
+                        const baseScore = isFever ? 200 : 100;
+                        const finalAdd = baseScore * (1 + comboBonus);
+                        
+                        score += finalAdd;
+                        energy = Math.min(100, energy + 15);
+                        starCount++;
+                        playSound('collect');
+                        createBurst(obj.x + 20, obj.y + 20);
+                        createFloatingText(obj.x, obj.y + 40, `+${finalAdd}${combo > 5 ? ' Combo!' : ''}`);
+                        
+                        if (starCount >= 5 && !isFever) triggerFever();
+                        obj.el.remove();
+                        gameObjects.splice(i, 1);
+                    } else if (obj.type === 'magnet') {
+                        magnetTimer = 300; // 5秒磁铁
+                        player.classList.add('magnet-active');
+                        createFloatingText(posX, 200, 'MAGNET!', '#38bdf8');
+                        playSound('fever');
+                        obj.el.remove();
+                        gameObjects.splice(i, 1);
+                    } else {
+                        // 障碍物碰撞
+                        if (isFever || invulTimer > 0) {
+                            if (isFever) {
+                                score += 50;
+                                createBurst(obj.x + 25, obj.y + 25);
+                                playSound('collect');
+                            }
+                            obj.el.remove();
+                            gameObjects.splice(i, 1);
+                        } else {
+                            hp -= 25;
+                            combo = 0; // 连击中断
+                            invulTimer = 90; // 1.5秒无敌
+                            hpFill.style.width = hp + '%';
+                            playSound('hit');
+                            viewport.classList.add('shake');
+                            setTimeout(() => viewport.classList.remove('shake'), 200);
+                            obj.el.remove();
+                            gameObjects.splice(i, 1);
+                            player.style.filter = 'invert(1) brightness(2)';
+                            if (hp <= 0) gameOver();
+                        }
+                    }
+                }
+                if (obj.x < -100) { obj.el.remove(); gameObjects.splice(i, 1); }
+            }
+        }
+
+        function createDust() {
+            if (document.querySelectorAll('.dust').length > 15) return;
+            if (Math.abs(velX) < 2 || isJumping) return;
+            const dust = document.createElement('div');
+            dust.className = 'dust';
+            dust.style.left = (posX + (facing === 'right' ? 20 : 60)) + 'px';
+            dust.style.bottom = (60 + Math.random() * 5) + 'px';
+            objectLayer.appendChild(dust);
+            let dustY = 0, dustOpacity = 1;
+            const anim = setInterval(() => {
+                dustY += 1.5; dustOpacity -= 0.08;
+                dust.style.transform = `translateY(-${dustY}px) scale(${1 + dustY/15})`;
+                dust.style.opacity = dustOpacity;
+                if (dustOpacity <= 0) { clearInterval(anim); if (dust.parentNode) dust.remove(); }
+            }, 40);
+        }
+
+        function update() {
+            if (gameState === 'PLAYING') {
+                gameTime++;
+                if (isFever) {
+                    feverTimer--;
+                    if (feverTimer <= 0) {
+                        isFever = false;
+                        viewport.classList.remove('fever');
+                        player.classList.remove('fever-rabbit');
+                    }
+                }
+
+                // 无敌闪烁逻辑
+                if (invulTimer > 0) {
+                    invulTimer--;
+                    player.style.opacity = (Math.floor(invulTimer / 5) % 2 === 0) ? "1" : "0.3";
+                    if (invulTimer <= 0) {
+                        player.style.opacity = "1";
+                        player.style.filter = "";
+                    }
+                }
+
+                // 磁铁倒计时
+                if (magnetTimer > 0) {
+                    magnetTimer--;
+                    if (magnetTimer <= 0) player.classList.remove('magnet-active');
+                }
+
+                // 昼夜交替 (每 30 秒切换一次)
+                if (gameTime % 1800 === 900) {
+                    viewport.classList.toggle('night');
+                    if (Math.random() > 0.5) toggleWeather(); // 切换昼夜时有概率切换天气
+                }
+                
+                spawnEnvironmental();
+                energy = Math.min(100, energy + (isFever ? 0.5 : 0.1));
+                energyFill.style.width = energy + '%';
+
+                if (!isDashing) {
+                    if (keys['KeyD'] || keys['ArrowRight']) { velX += ACCEL; facing = 'right'; }
+                    else if (keys['KeyA'] || keys['ArrowLeft']) { velX -= ACCEL; facing = 'left'; }
+                    velX *= FRICTION;
+                }
+                if (Math.abs(velX) < 0.1) velX = 0;
+                if (!isDashing) velX = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, velX));
+
+                if (keys['Space'] || keys['KeyW'] || keys['ArrowUp']) {
+                    if (!isJumping) {
+                        velY = JUMP_FORCE; isJumping = true; canDoubleJump = true;
+                        playSound('jump');
+                        keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false;
+                    } else if (canDoubleJump) {
+                        velY = JUMP_FORCE * 0.8; canDoubleJump = false;
+                        playSound('jump');
+                        keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false;
+                    }
+                }
+
+                velY += GRAVITY;
+                posY += velY;
+                if (posY > 0) { posY = 0; velY = 0; isJumping = false; }
+
+                posX += velX;
+                if (posX < 0) posX = 0;
+                if (posX > 900) posX = 900;
+
+                let animClass = isJumping ? (facing === 'right' ? 'anim-jump-right' : 'anim-jump-left') :
+                               (Math.abs(velX) > 0.5 ? (facing === 'right' ? 'anim-run-right' : 'anim-run-left') :
+                               (facing === 'right' ? 'anim-idle-right' : 'anim-idle-left'));
+                
+                const runSpeed = 1.2 - (Math.abs(velX) / (isFever ? 15 : MAX_SPEED));
+                player.style.animationDuration = `${Math.max(0.2, runSpeed)}s`;
+                player.className = animClass + (isDashing ? ' dashing' : '');
+                player.style.left = posX + 'px';
+                player.style.bottom = (45 - posY) + 'px'; // 基础高度下调至 45px (原来 60)
+
+                shadow.style.left = posX + 'px';
+                const shadowScale = 1 - (Math.abs(posY) / 200);
+                shadow.style.transform = `translateX(20px) scale(${Math.max(0.4, shadowScale)})`;
+                shadow.style.opacity = Math.max(0.1, shadowScale);
+
+                const scrollBase = isFever ? 3 : 1;
+                cloudPos -= (velX * 0.1 + scrollBase);
+                mountainPos -= (velX * 0.2 + scrollBase * 2);
+                treePos -= (velX * 0.4 + scrollBase * 3);
+                bushPos -= (velX * 0.7 + scrollBase * 5);
+                fgPos -= (velX * 1.5 + scrollBase * 8);
+                
+                clouds.style.transform = `translateX(${cloudPos % 1000}px)`;
+                mountains.style.transform = `translateX(${mountainPos % 1000}px)`;
+                trees.style.transform = `translateX(${treePos % 1000}px)`;
+                bushes.style.transform = `translateX(${bushPos % 1000}px)`;
+                foreground.style.transform = `translateX(${fgPos % 1000}px)`;
+                
+                score += isFever ? 1 : 0.2;
+                scoreEl.innerText = `SCORE: ${Math.floor(score).toString().padStart(4, '0')}`;
+
+                if (Math.abs(velX) > 0.5 && !isJumping && Math.random() > 0.8) createDust();
+                spawnObject();
+                updateObjects();
+            }
+            requestAnimationFrame(update);
+        }
+        update();
+    </script>
+</body>
+</html>
