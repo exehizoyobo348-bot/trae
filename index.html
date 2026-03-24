@@ -201,17 +201,6 @@
             100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
         }
 
-        /* 爆炸粒子 */
-        .particle-burst {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: #fcd34d;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 150;
-        }
-
         /* 视差背景层基类 */
         .parallax-layer {
             position: absolute;
@@ -340,9 +329,68 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: 8;
+            opacity: 0; /* Initially hidden */
+            transition: transform 0.6s ease-out, opacity 0.6s ease-out;
         }
 
-        /* 精灵兔角色 */
+        /* 爆炸粒子 */
+        .particle-burst {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fcd34d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 150;
+            opacity: 0; /* Initially hidden */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+        }
+            transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+        
+
+        /* 爆炸粒子 */
+        .particle-burst {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fcd34d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 150;
+            opacity: 0; /* Initially hidden */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+        }
+        
+
+        .dust.active {
+            animation: dust-anim 0.6s ease-out forwards;
+        }
+
+        @keyframes dust-anim {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-20px) scale(2); opacity: 0; }
+        }
+
+        /* 爆炸粒子 */
+        .particle-burst {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fcd34d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 150;
+            opacity: 0; /* Initially hidden */
+        }
+
+        .particle-burst.active {
+            animation: burst-anim 0.5s ease-out forwards;
+        }
+
+        @keyframes burst-anim {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: translate(var(--vx), var(--vy)) scale(0); opacity: 0; }
+        }
         #player {
             position: absolute;
             width: var(--rabbit-w);
@@ -778,6 +826,9 @@
             isRaining = false, combo = 0, invulTimer = 0, magnetTimer = 0,
             shieldTimer = 0, slowMoTimer = 0, highScore = localStorage.getItem('sprite-rabbit-high-score') || 0;
 
+        let dustPool = [], burstPool = [];
+        let dustIndex = 0, burstIndex = 0;
+
         highscoreEl.innerText = `HI: ${Math.floor(highScore).toString().padStart(4, '0')}`;
 
         const keys = {};
@@ -859,17 +910,35 @@
             viewport.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
+        function initParticlePools() {
+            // Create dust pool
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'dust';
+                objectLayer.appendChild(p);
+                dustPool.push(p);
+            }
+            // Create burst pool
+            for (let i = 0; i < 50; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle-burst';
+                viewport.appendChild(p);
+                burstPool.push(p);
+            }
+        }
+
         function createBurst(x, y) {
             for (let i = 0; i < 8; i++) {
-                const p = document.createElement('div'); p.className = 'particle-burst';
-                p.style.left = x + 'px'; p.style.bottom = y + 'px';
-                const angle = (i / 8) * Math.PI * 2, speed = 2 + Math.random() * 3, vx = Math.cos(angle) * speed, vy = Math.sin(angle) * speed;
-                viewport.appendChild(p);
-                let px = x, py = y, op = 1;
-                const anim = setInterval(() => {
-                    px += vx; py += vy; op -= 0.05; p.style.left = px + 'px'; p.style.bottom = py + 'px'; p.style.opacity = op;
-                    if (op <= 0) { clearInterval(anim); p.remove(); }
-                }, 20);
+                const p = burstPool[burstIndex];
+                if (!p) continue;
+                p.style.left = x + 'px';
+                p.style.bottom = y + 'px';
+                // Add a random offset to the burst particles to make them look more natural
+                p.style.setProperty('--vx', (Math.random() - 0.5) * 50 + 'px');
+                p.style.setProperty('--vy', (Math.random() - 0.5) * 50 + 'px');
+                p.classList.add('active');
+                setTimeout(() => p.classList.remove('active'), 500);
+                burstIndex = (burstIndex + 1) % burstPool.length;
             }
         }
 
@@ -888,6 +957,7 @@
             }
         }
         initStars();
+        initParticlePools();
 
         function spawnObject() {
             spawnTimer++;
@@ -1003,15 +1073,14 @@
         }
 
         function createDust() {
-            if (document.querySelectorAll('.dust').length > 10 || Math.abs(velX) < 2 || isJumping) return;
-            const dust = document.createElement('div'); dust.className = 'dust';
-            dust.style.left = (posX + (facing === 'right' ? 20 : 60)) + 'px'; dust.style.bottom = (45 + Math.random() * 5) + 'px';
-            objectLayer.appendChild(dust);
-            let dustY = 0, dustOpacity = 1;
-            const anim = setInterval(() => {
-                dustY += 1.5; dustOpacity -= 0.08; dust.style.transform = `translateY(-${dustY}px) scale(${1 + dustY/15})`;
-                dust.style.opacity = dustOpacity; if (dustOpacity <= 0) { clearInterval(anim); if (dust.parentNode) dust.remove(); }
-            }, 40);
+            if (Math.abs(velX) < 2 || isJumping) return;
+            const p = dustPool[dustIndex];
+            if (!p) return;
+            p.style.left = (posX + (facing === 'right' ? 20 : 60)) + 'px';
+            p.style.bottom = (45 + Math.random() * 5) + 'px';
+            p.classList.add('active');
+            setTimeout(() => p.classList.remove('active'), 600);
+            dustIndex = (dustIndex + 1) % dustPool.length;
         }
 
         function update() {
@@ -1064,7 +1133,7 @@
 
                 if (keys['Space'] || keys['KeyW'] || keys['ArrowUp']) {
                     if (!isJumping) { velY = JUMP_FORCE; isJumping = true; canDoubleJump = true; playSound('jump'); keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false; }
-                    else if (canDoubleJump) { velY = JUMP_FORCE * 0.8; canDoubleJump = false; playSound('jump'); keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false; }
+                    else if (canDoubleJump) { velY = JUMP_FORCE; canDoubleJump = false; playSound('jump'); keys['Space'] = keys['KeyW'] = keys['ArrowUp'] = false; }
                 }
 
                 velY += GRAVITY; posY += velY;
@@ -1072,8 +1141,7 @@
                 posX += velX; posX = Math.max(0, Math.min(900, posX));
 
                 let animClass = isJumping ? (facing === 'right' ? 'anim-jump-right' : 'anim-jump-left') :
-                               (Math.abs(velX) > 0.5 ? (facing === 'right' ? 'anim-run-right' : 'anim-run-left') :
-                               (facing === 'right' ? 'anim-idle-right' : 'anim-idle-left'));
+                               (facing === 'right' ? 'anim-run-right' : 'anim-run-left');
                 
                 player.style.animationDuration = `${Math.max(0.2, 1.2 - (Math.abs(velX) / (isFever ? 15 : MAX_SPEED)))}s`;
                 player.className = animClass + (isDashing ? ' dashing' : '');
